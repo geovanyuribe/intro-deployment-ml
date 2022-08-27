@@ -1,0 +1,6 @@
+['remote "myremote"']
+    url = gdrive://1szbEXWaTdEchc_D5Hwy6GduufOc-6fyt
+['remote "dataset"']
+    url = gdrive://1szbEXWaTdEchc_D5Hwy6GduufOc-6fyt
+['remote "model"']
+    url = gdrive://1SaOI6ExC5Bq0HhgGM-c7joq_02C2HoDn
