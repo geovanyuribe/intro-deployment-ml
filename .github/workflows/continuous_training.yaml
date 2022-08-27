@@ -1,0 +1,46 @@
+name: Continuous Training
+on:
+  push:
+    branches:
+      - workflow_continuous_training
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Why to run this?
+        required: false
+        default: running CT
+jobs:
+  continuous-training:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Train model
+        run: |
+           pip3 install virtualenv
+           virtualenv venv
+           source venv/bin/activate
+           pip install -r src/requirements.txt
+           dvc pull model/model.pkl.dvc -r model
+           dvc unprotect model/model.pkl
+           dvc repro -f 
+           echo "Training Completed"
+           dvc add model/model.pkl -r model --to-remote
+           dvc push model/model.pkl.dvc -r model
+      - name: Commit .dvc file changes
+        run: |
+          git config --local user.email "geovanyuribe@gmail.com"
+          git config --local user.name "github-actions[bot]"
+          git add model/model.pkl.dvc
+          git commit -m "Updating model serialization"
+      - uses: ad-m/github-push-action@master
+        with:
+            branch: ${{ github.ref }}
+      - uses: iterative/setup-cml@v1
+      - name: Push metrics
+        run: |
+          cat report.txt >> report.md 
+          cml-publish prediction_behavior.png --md >> report.md
+          cml-send-comment report.md
